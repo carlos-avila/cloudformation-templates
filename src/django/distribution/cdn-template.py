@@ -1,48 +1,27 @@
 #!/usr/bin/env python3
 
-from troposphere import Ref, Sub, GetAtt
+from troposphere import Ref, Sub
 from troposphere import Template, Parameter, Output
-from troposphere import cloudfront, route53
+from troposphere import cloudfront
 
 # Magic AWS number For CloudFront
 CLOUDFRONT_HOSTED_ZONE_ID = 'Z2FDTNDATAQYW2'
 
-template = Template("""
-Creates the resources needed for distribution of a lambda powered django application.  
+template = Template("""Provide static and media content distribution using CloudFront for a Django application. It 
+assumes there's separate buckets for static and media assets. Always forward http to https.
 
-It assumes there's separate bucket for static and media assets. Always forward http to https.
+Creates the following resources:
+- CloudFront distribution
 
-Please note CloudFront requires ACM certificates be created in us-east-1.
-
-Template: lambda-django-distribution.
+Template: cdn-template.
 Author: Carlos Avila <cavila@mandelbrew.com>.
 """)
 
 # region Parameters
-email = template.add_parameter(Parameter(
-    'Email',
-    Default='administrator@example.com',
-    Description='Email address used for notifications',
-    Type='String'
-))
-
 hosted_zone_id = template.add_parameter(Parameter(
     'HostedZoneId',
     Description='Hosted zone used for the CDN domain name.',
     Type='AWS::Route53::HostedZone::Id'
-))
-
-domain = template.add_parameter(Parameter(
-    'Domain',
-    Default='cdn.example.com',
-    Description='CNAME for the distribution.',
-    Type='String',
-))
-
-certificate = template.add_parameter(Parameter(
-    'Certificate',
-    Description='ARN of the ACM certificate used for Cloudfront\'s SSL',
-    Type='String'
 ))
 
 static_domain = template.add_parameter(Parameter(
@@ -87,7 +66,6 @@ media_pattern = template.add_parameter(Parameter(
 distribution = template.add_resource(cloudfront.Distribution(
     'Distribution',
     DistributionConfig=cloudfront.DistributionConfig(
-        Aliases=[Ref(domain)],
         CacheBehaviors=[
             cloudfront.CacheBehavior(
                 Compress=True,
@@ -142,27 +120,9 @@ distribution = template.add_resource(cloudfront.Distribution(
             ),
         ],
         PriceClass='PriceClass_100',
-        ViewerCertificate=cloudfront.ViewerCertificate(
-            AcmCertificateArn=Ref(certificate),
-            SslSupportMethod='sni-only',
-        )
     )
 ))
 
-record_set_group = template.add_resource(route53.RecordSetGroup(
-    'RecordSetGroup',
-    HostedZoneId=Ref(hosted_zone_id),
-    RecordSets=[
-        route53.RecordSet(
-            Name=Ref(domain),
-            Type='A',
-            AliasTarget=route53.AliasTarget(
-                HostedZoneId=CLOUDFRONT_HOSTED_ZONE_ID,
-                DNSName=GetAtt(distribution, 'DomainName'),
-            )
-        ),
-    ]
-))
 # endregion
 
 # region Outputs
@@ -176,12 +136,8 @@ template.add_output(Output(
 template.add_metadata({
     'AWS::CloudFormation::Interface': {
         'ParameterLabels': {
-            # Project
-            email.title: {'default': 'Notifications'},
             # Django CDN
             hosted_zone_id.title: {'default': 'Hosted Zone ID'},
-            domain.title: {'default': 'Domain'},
-            certificate.title: {'default': 'ACM certificate'},
             # Static assets CDN
             static_domain.title: {'default': 'Static Domain Name'},
             static_path.title: {'default': 'Static Path'},
@@ -192,17 +148,9 @@ template.add_metadata({
         },
         'ParameterGroups': [
             {
-                'Label': {'default': 'Project'},
-                'Parameters': [
-                    email.title,
-                ]
-            },
-            {
                 'Label': {'default': 'Django CDN'},
                 'Parameters': [
                     hosted_zone_id.title,
-                    domain.title,
-                    certificate.title,
                 ]
             },
             {
