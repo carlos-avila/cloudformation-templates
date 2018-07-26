@@ -13,8 +13,8 @@ static and media assets. Always forward http to https. Please note CloudFront re
 us-east-1. 
 
 Creates the following resources:
-- CloudFront distribution
-- Route53 record set
+    - CloudFront distribution
+    - Route53 record set
 
 Template: cdn-cname-template.
 Author: Carlos Avila <cavila@mandelbrew.com>.

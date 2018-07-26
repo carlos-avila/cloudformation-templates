@@ -11,7 +11,7 @@ template = Template("""Provide static and media content distribution using Cloud
 assumes there's separate buckets for static and media assets. Always forward http to https.
 
 Creates the following resources:
-- CloudFront distribution
+    - CloudFront distribution
 
 Template: cdn-template.
 Author: Carlos Avila <cavila@mandelbrew.com>.
