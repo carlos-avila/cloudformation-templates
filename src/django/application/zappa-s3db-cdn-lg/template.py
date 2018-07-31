@@ -14,14 +14,14 @@ import outputs
 template = Template("""Provides all resources needed for a simple serverless Django application with three environments.
 
 Creates the following resources:
-    - S3 bucket: Zappa slim_handler bucket
-    - S3 bucket: secret environment variables 
+    - S3 bucket: Zappa slim_handler bucket.
+    - S3 bucket: secret environment variables. 
 
 In addition, the following resources are created for each environment:
-    - S3 bucket: database (check zappa-django-utils: s3sqlite)
-    - S3 bucket: static assets
-    - S3 bucket: media assets
-    - CloudFront distribution: configured to handle static and media assets
+    - S3 bucket: database (check zappa-django-utils: s3sqlite).
+    - S3 bucket: static assets.
+    - S3 bucket: media assets.
+    - CloudFront distribution: configured to handle static and media assets.
 
 Template: zappa-s3db-cdn-lg.
 Author: Carlos Avila <cavila@mandelbrew.com>.
@@ -75,17 +75,20 @@ template.add_output(outputs.app_secrets)
 # Dev
 template.add_output(outputs.app_dev_media)
 template.add_output(outputs.app_dev_static)
+template.add_output(outputs.app_dev_database)
 template.add_output(outputs.app_dev_distribution)
 template.add_output(outputs.app_dev_role_arn)
 template.add_output(outputs.app_dev_role_name)
 # Test
 template.add_output(outputs.app_test_media)
 template.add_output(outputs.app_test_static)
+template.add_output(outputs.app_test_database)
 template.add_output(outputs.app_test_role_arn)
 template.add_output(outputs.app_test_role_name)
 # Prod
 template.add_output(outputs.app_prod_media)
 template.add_output(outputs.app_prod_static)
+template.add_output(outputs.app_prod_database)
 template.add_output(outputs.app_prod_role_arn)
 template.add_output(outputs.app_prod_role_name)
 # endregion

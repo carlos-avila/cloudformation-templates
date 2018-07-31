@@ -24,6 +24,10 @@ app_dev_static = Output(
     'AppDevStatic',
     Value=Ref(dev_app.static_assets)
 )
+app_dev_database = Output(
+    'AppDevDatabase',
+    Value=Ref(dev_app.database)
+)
 app_dev_distribution = Output(
     'AppDevDistribution',
     Value=Ref(dev_app.distribution)
@@ -46,6 +50,10 @@ app_test_static = Output(
     'AppTestStatic',
     Value=Ref(test_app.static_assets)
 )
+app_test_database = Output(
+    'AppTestDatabase',
+    Value=Ref(test_app.database)
+)
 app_test_distribution = Output(
     'AppTestDistribution',
     Value=Ref(test_app.distribution)
@@ -67,6 +75,10 @@ app_prod_media = Output(
 app_prod_static = Output(
     'AppProdStatic',
     Value=Ref(prod_app.static_assets)
+)
+app_prod_database = Output(
+    'AppProdDatabase',
+    Value=Ref(prod_app.database)
 )
 app_prod_distribution = Output(
     'AppProdDistribution',
