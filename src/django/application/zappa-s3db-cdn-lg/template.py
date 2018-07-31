@@ -2,8 +2,6 @@
 
 from troposphere import Template
 
-import parameters
-
 from resources import app
 from resources.dev import app as dev_app
 from resources.test import app as test_app
@@ -27,12 +25,7 @@ Template: zappa-s3db-cdn-lg.
 Author: Carlos Avila <cavila@mandelbrew.com>.
 """)
 
-# region Parameters
-template.add_parameter(parameters.email)
-# endregion
-
 # region App
-template.add_resource(app.repository)
 template.add_resource(app.source)
 template.add_resource(app.source_policy)
 template.add_resource(app.secrets)
@@ -91,25 +84,6 @@ template.add_output(outputs.app_prod_static)
 template.add_output(outputs.app_prod_database)
 template.add_output(outputs.app_prod_role_arn)
 template.add_output(outputs.app_prod_role_name)
-# endregion
-
-# region Metadata
-template.add_metadata({
-    'AWS::CloudFormation::Interface': {
-        'ParameterLabels': {
-            # Project
-            parameters.email.title: {'default': 'Notifications'},
-        },
-        'ParameterGroups': [
-            {
-                'Label': {'default': 'Project'},
-                'Parameters': [
-                    parameters.email.title,
-                ]
-            },
-        ]
-    }
-})
 # endregion
 
 if __name__ == '__main__':

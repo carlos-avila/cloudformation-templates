@@ -5,11 +5,6 @@ from resources.dev import app as dev_app
 from resources.test import app as test_app
 from resources.prod import app as prod_app
 
-repository = codecommit.Repository(
-    'AppRepository',
-    RepositoryName=Sub('${AWS::StackName}')
-)
-
 secrets = s3.Bucket(
     'AppSecrets',
     VersioningConfiguration=s3.VersioningConfiguration(Status='Enabled'),
