@@ -69,12 +69,30 @@ engine = template.add_parameter(Parameter(
                    'sqlserver-web', ]
 ))
 
+storage_size = template.add_parameter(Parameter(
+    'StorageSize',
+    Type='Number',
+    Description='The allocated storage size, specified in gigabytes (GB).',
+    Default=20,
+    MinValue=5,
+    MaxValue=16000,
+))
+
 storage_type = template.add_parameter(Parameter(
     'StorageType',
     Type='String',
     Description='Specifies the storage type to be associated with the DB instance.',
     Default='standard',
     AllowedValues=['standard', 'gp2', 'io1'],
+))
+
+backup_period = template.add_parameter(Parameter(
+    'BackupPeriod',
+    Type='Number',
+    Description='Specifies the storage type to be associated with the DB instance.',
+    Default=15,
+    MinValue=0,
+    MaxValue=35,
 ))
 # endregion
 
@@ -105,17 +123,18 @@ sec_group = template.add_resource(ec2.SecurityGroup(
 
 database = template.add_resource(rds.DBInstance(
     'Database',
-    AllocatedStorage=10,
-    BackupRetentionPeriod=15,
+    AllocatedStorage=Ref(storage_size),
+    BackupRetentionPeriod=Ref(backup_period),
     DBInstanceClass=Ref(instance_class),
     DeletionPolicy='Snapshot',
     Engine=Ref(engine),
     MasterUsername=Ref(master_username),
     MasterUserPassword=Ref(master_password),
     MultiAZ=True,
-    StorageEncrypted=False,
     PubliclyAccessible=True,
-    VPCSecurityGroups=[Ref(sec_group)]
+    StorageEncrypted=False,
+    StorageType=Ref(storage_type),
+    VPCSecurityGroups=[Ref(sec_group)],
 ))
 # endregion
 
@@ -135,12 +154,17 @@ template.add_output(Output(
 template.add_metadata({
     'AWS::CloudFormation::Interface': {
         'ParameterLabels': {
+            # Network
             vpc.title: {'default': 'VPC'},
             allow_cidr.title: {'default': 'Allow'},
+            # Database
+            backup_period.title: {'default': 'Backup Retention Period'},
             engine.title: {'default': 'Engine'},
             instance_class.title: {'default': 'Instance Class'},
-            master_username.title: {'default': 'Master Username'},
             master_password.title: {'default': 'Master Password'},
+            master_username.title: {'default': 'Master Username'},
+            storage_size.title: {'default': 'Storage Size'},
+            storage_type.title: {'default': 'Storage Type'},
 
         },
         'ParameterGroups': [
@@ -158,6 +182,9 @@ template.add_metadata({
                     master_password.title,
                     instance_class.title,
                     engine.title,
+                    backup_period.title,
+                    storage_type.title,
+                    storage_size.title,
                 ]
             },
         ]
