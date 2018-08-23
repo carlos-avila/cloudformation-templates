@@ -4,7 +4,8 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/cloudformation-templates.iml" filepath="$PROJECT_DIR$/cloudformation-templates.iml" />
       <module fileurl="file://$PROJECT_DIR$/src/django/zappa/s3db-large/s3db-large.iml" filepath="$PROJECT_DIR$/src/django/zappa/s3db-large/s3db-large.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/django/application/zappa-s3db-cdn-lg/zappa-s3db-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django/application/zappa-s3db-cdn-lg/zappa-s3db-cdn-lg.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/django/application/zappa-aio-s3db-cdn-lg/zappa-aio-s3db-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django/application/zappa-aio-s3db-cdn-lg/zappa-aio-s3db-cdn-lg.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/django/application/zappa-cdn-lg/zappa-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django/application/zappa-cdn-lg/zappa-cdn-lg.iml" />
     </modules>
   </component>
 </project>

@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
-from troposphere import Ref, Sub, Template, Parameter, rds, ec2
+from troposphere import Ref, Sub, GetAtt
+from troposphere import rds, ec2
+from troposphere import Template, Parameter, Output
 
-template = Template("""
+template = Template("""Provides a public, managed database resource with multi-az deployment.
+
 Template: rds-template.
 Author: Carlos Avila <cavila@mandelbrew.com>.
 """)
 
+# region Parameters
 vpc = template.add_parameter(Parameter(
     'Vpc',
     Type='AWS::EC2::VPC::Id',
@@ -17,23 +21,22 @@ allow_cidr = template.add_parameter(Parameter(
     'AllowCidr',
     Type='String',
     Description='Allows connections to and from the provided CIDR block',
-    Default='173.244.44.0/24'
+    Default='0.0.0.0/0'
 ))
 
-# region Parameters - Database
-database_master_username = template.add_parameter(Parameter(
-    'DatabaseMasterUsername',
+master_username = template.add_parameter(Parameter(
+    'MasterUsername',
     Type='String',
 ))
 
-database_master_password = template.add_parameter(Parameter(
-    'DatabaseMasterPassword',
+master_password = template.add_parameter(Parameter(
+    'MasterPassword',
     Type='String',
     NoEcho=True
 ))
 
-database_instance_class = template.add_parameter(Parameter(
-    'DatabaseInstanceType',
+instance_class = template.add_parameter(Parameter(
+    'InstanceType',
     Type='String',
     Default='db.t2.micro',
     AllowedValues=[
@@ -47,8 +50,8 @@ database_instance_class = template.add_parameter(Parameter(
     ]
 ))
 
-database_engine = template.add_parameter(Parameter(
-    'DatabaseEngine',
+engine = template.add_parameter(Parameter(
+    'Engine',
     Type='String',
     Description='The name of the database engine to be used',
     Default='postgres',
@@ -65,12 +68,21 @@ database_engine = template.add_parameter(Parameter(
                    'sqlserver-ex',
                    'sqlserver-web', ]
 ))
+
+storage_type = template.add_parameter(Parameter(
+    'StorageType',
+    Type='String',
+    Description='Specifies the storage type to be associated with the DB instance.',
+    Default='standard',
+    AllowedValues=['standard', 'gp2', 'io1'],
+))
 # endregion
 
-# region RDS
+# region Resources
+
 sec_group = template.add_resource(ec2.SecurityGroup(
     'SecurityGroup',
-    GroupDescription=Sub('Default rules'),
+    GroupDescription=Sub('${AWS::StackName}'),
     SecurityGroupIngress=[
         ec2.SecurityGroupRule(
             CidrIp=Ref(allow_cidr),
@@ -93,16 +105,29 @@ sec_group = template.add_resource(ec2.SecurityGroup(
 
 database = template.add_resource(rds.DBInstance(
     'Database',
-    AllocatedStorage=5,
-    BackupRetentionPeriod=7,
-    DBInstanceClass=Ref(database_instance_class),
+    AllocatedStorage=10,
+    BackupRetentionPeriod=15,
+    DBInstanceClass=Ref(instance_class),
     DeletionPolicy='Snapshot',
-    Engine=Ref(database_engine),
-    MasterUsername=Ref(database_master_username),
-    MasterUserPassword=Ref(database_master_password),
-    MultiAZ=False,
+    Engine=Ref(engine),
+    MasterUsername=Ref(master_username),
+    MasterUserPassword=Ref(master_password),
+    MultiAZ=True,
+    StorageEncrypted=False,
     PubliclyAccessible=True,
     VPCSecurityGroups=[Ref(sec_group)]
+))
+# endregion
+
+# region Output
+template.add_output(Output(
+    'Address',
+    Value=GetAtt(database, 'Endpoint.Address')
+))
+
+template.add_output(Output(
+    'Port',
+    Value=GetAtt(database, 'Endpoint.Port')
 ))
 # endregion
 
@@ -110,14 +135,12 @@ database = template.add_resource(rds.DBInstance(
 template.add_metadata({
     'AWS::CloudFormation::Interface': {
         'ParameterLabels': {
-            # Network
             vpc.title: {'default': 'VPC'},
             allow_cidr.title: {'default': 'Allow'},
-            # Database Service
-            database_engine.title: {'default': 'Engine'},
-            database_instance_class.title: {'default': 'Instance Class'},
-            database_master_username.title: {'default': 'Master Username'},
-            database_master_password.title: {'default': 'Master Password'},
+            engine.title: {'default': 'Engine'},
+            instance_class.title: {'default': 'Instance Class'},
+            master_username.title: {'default': 'Master Username'},
+            master_password.title: {'default': 'Master Password'},
 
         },
         'ParameterGroups': [
@@ -131,10 +154,10 @@ template.add_metadata({
             {
                 'Label': {'default': 'Database Service'},
                 'Parameters': [
-                    database_master_username.title,
-                    database_master_password.title,
-                    database_instance_class.title,
-                    database_engine.title,
+                    master_username.title,
+                    master_password.title,
+                    instance_class.title,
+                    engine.title,
                 ]
             },
         ]
