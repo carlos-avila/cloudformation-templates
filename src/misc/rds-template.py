@@ -50,29 +50,46 @@ instance_class = template.add_parameter(Parameter(
     ]
 ))
 
+multi_az = template.add_parameter(Parameter(
+    'MultiAz',
+    Type='String',
+    Default='false',
+    AllowedValues=['true', 'false'],
+))
+
 engine = template.add_parameter(Parameter(
     'Engine',
     Type='String',
     Description='The name of the database engine to be used',
     Default='postgres',
-    AllowedValues=['aurora',
-                   'mariadb',
-                   'mysql',
-                   'oracle-ee',
-                   'oracle-se2',
-                   'oracle-se1',
-                   'oracle-se',
-                   'postgres',
-                   'sqlserver-ee',
-                   'sqlserver-se',
-                   'sqlserver-ex',
-                   'sqlserver-web', ]
+    AllowedValues=[
+        'aurora',
+        'mariadb',
+        'mysql',
+        'oracle-ee',
+        'oracle-se2',
+        'oracle-se1',
+        'oracle-se',
+        'postgres',
+        'sqlserver-ee',
+        'sqlserver-se',
+        'sqlserver-ex',
+        'sqlserver-web',
+    ]
+))
+
+engine_version = template.add_parameter(Parameter(
+    'EngineVersion',
+    Type='String',
+    Description='The version number of the database engine that the DB instance uses.',
+    Default='9.6',
 ))
 
 storage_size = template.add_parameter(Parameter(
     'StorageSize',
     Type='Number',
     Description='The allocated storage size, specified in gigabytes (GB).',
+    ConstraintDescription='5GB to 16TB',
     Default=20,
     MinValue=5,
     MaxValue=16000,
@@ -89,7 +106,8 @@ storage_type = template.add_parameter(Parameter(
 backup_period = template.add_parameter(Parameter(
     'BackupPeriod',
     Type='Number',
-    Description='Specifies the storage type to be associated with the DB instance.',
+    Description='The number of days for which automated backups are retained.',
+    ConstraintDescription='0 to 35 days',
     Default=15,
     MinValue=0,
     MaxValue=35,
@@ -128,9 +146,10 @@ database = template.add_resource(rds.DBInstance(
     DBInstanceClass=Ref(instance_class),
     DeletionPolicy='Snapshot',
     Engine=Ref(engine),
+    EngineVersion=Ref(engine_version),
     MasterUsername=Ref(master_username),
     MasterUserPassword=Ref(master_password),
-    MultiAZ=True,
+    MultiAZ=Ref(multi_az),
     PubliclyAccessible=True,
     StorageEncrypted=False,
     StorageType=Ref(storage_type),
@@ -160,12 +179,13 @@ template.add_metadata({
             # Database
             backup_period.title: {'default': 'Backup Retention Period'},
             engine.title: {'default': 'Engine'},
+            engine_version.title: {'default': 'Engine Version'},
             instance_class.title: {'default': 'Instance Class'},
+            multi_az.title: {'default': 'Multi-AZ'},
             master_password.title: {'default': 'Master Password'},
             master_username.title: {'default': 'Master Username'},
             storage_size.title: {'default': 'Storage Size'},
             storage_type.title: {'default': 'Storage Type'},
-
         },
         'ParameterGroups': [
             {
@@ -181,7 +201,9 @@ template.add_metadata({
                     master_username.title,
                     master_password.title,
                     instance_class.title,
+                    multi_az.title,
                     engine.title,
+                    engine_version.title,
                     backup_period.title,
                     storage_type.title,
                     storage_size.title,

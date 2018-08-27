@@ -1,8 +1,8 @@
 from troposphere import Ref, Sub, GetAtt
-from troposphere import s3, iam, cloudfront
+from troposphere import s3, iam, cloudfront, codecommit
 
 role = iam.Role(
-    'AppTestRole',
+    'AppRole',
     AssumeRolePolicyDocument={
         'Statement': [
             {
@@ -10,9 +10,9 @@ role = iam.Role(
                 'Effect': 'Allow',
                 'Principal': {
                     'Service': [
-                        'events.amazonaws.com',
                         'apigateway.amazonaws.com',
-                        'lambda.amazonaws.com'
+                        'events.amazonaws.com',
+                        'lambda.amazonaws.com',
                     ]
                 }
             }
@@ -20,8 +20,16 @@ role = iam.Role(
     }
 )
 
+secrets = s3.Bucket(
+    'AppSecrets',
+    VersioningConfiguration=s3.VersioningConfiguration(Status='Enabled'),
+)
+source = s3.Bucket(
+    'AppSource',
+)
+
 static_assets = s3.Bucket(
-    'AppTestStaticAssets',
+    'AppStaticAssets',
     CorsConfiguration=s3.CorsConfiguration(
         CorsRules=[
             s3.CorsRules(
@@ -36,24 +44,25 @@ static_assets = s3.Bucket(
 )
 
 static_assets_policy = s3.BucketPolicy(
-    'AppTestStaticAssetsPolicy',
+    'AppStaticAssetsPolicy',
     Bucket=Ref(static_assets),
     PolicyDocument={
         'Statement': [
             {
-                'Action': ['s3:GetObject'],
+                'Action': 's3:GetObject',
                 'Effect': 'Allow',
                 'Principal': '*',
                 'Resource': [
-                    Sub('${{{0}.Arn}}/*'.format(static_assets.title))
+                    Sub('${arn}/*', **{'arn': GetAtt(static_assets, 'Arn')}),
                 ]
-            }
+            },
+
         ]
     }
 )
 
 media_assets = s3.Bucket(
-    'AppTestMediaAssets',
+    'AppMediaAssets',
     CorsConfiguration=s3.CorsConfiguration(
         CorsRules=[
             s3.CorsRules(
@@ -68,58 +77,24 @@ media_assets = s3.Bucket(
 )
 
 media_assets_policy = s3.BucketPolicy(
-    'AppTestMediaAssetsPolicy',
+    'AppMediaAssetsPolicy',
     Bucket=Ref(media_assets),
     PolicyDocument={
         'Statement': [
             {
-                'Action': ['s3:GetObject'],
+                'Action': 's3:GetObject',
                 'Effect': 'Allow',
                 'Principal': '*',
                 'Resource': [
-                    Sub('${{{0}.Arn}}/*'.format(media_assets.title))
+                    Sub('${arn}/*', **{'arn': GetAtt(media_assets, 'Arn')}),
                 ]
             }
         ]
     }
 )
 
-database = s3.Bucket(
-    'AppTestDatabase',
-    VersioningConfiguration=s3.VersioningConfiguration(
-        Status='Enabled'
-    ),
-    LifecycleConfiguration=s3.LifecycleConfiguration(
-        Rules=[
-            s3.LifecycleRule(
-                AbortIncompleteMultipartUpload=s3.AbortIncompleteMultipartUpload(DaysAfterInitiation=3),
-                Id='History Limit',
-                NoncurrentVersionExpirationInDays=7,
-                Status='Enabled',
-            )
-        ]
-    )
-)
-
-database_policy = s3.BucketPolicy(
-    'AppTestDatabasePolicy',
-    Bucket=Ref(database),
-    PolicyDocument={
-        "Statement": [
-            {
-                "Effect": "Allow",
-                "Principal": {
-                    "AWS": GetAtt(role, 'Arn'),
-                },
-                "Action": "s3:GetObject",
-                "Resource": Sub('${{{0}.Arn}}/*'.format(database.title))
-            },
-        ]
-    }
-)
-
 distribution = cloudfront.Distribution(
-    'AppTestDistribution',
+    'AppDistribution',
     DistributionConfig=cloudfront.DistributionConfig(
         CacheBehaviors=[
             cloudfront.CacheBehavior(
@@ -133,7 +108,7 @@ distribution = cloudfront.Distribution(
                 ViewerProtocolPolicy='redirect-to-https',
             )
         ],
-        Comment=Sub('${AWS::StackName}-test'),
+        Comment=Sub('${AWS::StackName}'),
         DefaultCacheBehavior=cloudfront.DefaultCacheBehavior(
             Compress=True,
             ForwardedValues=cloudfront.ForwardedValues(
@@ -165,34 +140,42 @@ distribution = cloudfront.Distribution(
 )
 
 policy = iam.PolicyType(
-    'AppTestPolicy',
-    PolicyName='AppTestPolicy',
+    'AppPolicy',
+    PolicyName='AppPolicy',
     Roles=[Ref(role)],
     PolicyDocument={
         'Statement': [
-            {
+            {  # Lambda service
+                'Action': ['lambda:InvokeFunction'],
                 'Effect': 'Allow',
-                'Action': [
-                    'logs:*'
-                ],
-                'Resource': 'arn:aws:logs:*:*:*'
+                'Resource': ['*']
             },
-            {
+            {  # Media bucket
+                'Action': "s3:*",
                 'Effect': 'Allow',
-                'Action': [
-                    'lambda:InvokeFunction'
-                ],
                 'Resource': [
-                    '*'
+                    GetAtt(media_assets, 'Arn'),
+                    Sub('${arn}/*', **{'arn': GetAtt(media_assets, 'Arn')}),
                 ]
             },
-            {
+            {  # Static bucket
+                'Action': "s3:*",
                 'Effect': 'Allow',
-                'Action': [
-                    's3:*'
-                ],
-                'Resource': 'arn:aws:s3:::*'
-            }
+                'Resource': [
+                    GetAtt(static_assets, 'Arn'),
+                    Sub('${arn}/*', **{'arn': GetAtt(static_assets, 'Arn')}),
+                ]
+            },
+            {  # Source bucket
+                "Action": "s3:GetObject",
+                "Effect": "Allow",
+                "Resource": Sub('${arn}/*', **{'arn': GetAtt(source, 'Arn')}),
+            },
+            {  # Secrets bucket
+                "Action": "s3:GetObject",
+                "Effect": "Allow",
+                "Resource": Sub('${arn}/*', **{'arn': GetAtt(secrets, 'Arn')}),
+            },
         ]
     }
 )
