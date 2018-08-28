@@ -145,10 +145,20 @@ policy = iam.PolicyType(
     Roles=[Ref(role)],
     PolicyDocument={
         'Statement': [
-            {  # Lambda service
+            {  # CloudWatch
+                "Effect": "Allow",
+                "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:DescribeLogStreams",
+                    "logs:PutLogEvents",
+                ],
+                "Resource": "arn:aws:logs:*",
+            },
+            {  # Lambda
                 'Action': ['lambda:InvokeFunction'],
                 'Effect': 'Allow',
-                'Resource': ['*']
+                'Resource': 'arn:aws:lambda:*'
             },
             {  # Media bucket
                 'Action': "s3:*",

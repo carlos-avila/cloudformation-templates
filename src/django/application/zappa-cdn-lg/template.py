@@ -6,7 +6,7 @@ from resources import app
 
 import outputs
 
-template = Template("""Provides all resources needed for a serverless Django application.
+template = Template("""Provides basic resources needed for a serverless Django application.
 
 Creates the following resources:
     - S3 bucket: Zappa slim_handler bucket.
