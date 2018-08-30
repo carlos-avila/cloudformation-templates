@@ -1,5 +1,13 @@
 from troposphere import Parameter
 
+source_provider = Parameter(
+    'ParametersSourceProvider',
+    AllowedValues=['S3', 'CodeCommit'],
+    Default='S3',
+    Description='Input source for the CD/CI pipeline.',
+    Type='String'
+)
+
 email = Parameter(
     'ParametersEmail',
     Description='Email address used for notifications',
@@ -14,8 +22,8 @@ create_dist = Parameter(
     Type='String'
 )
 
-dist_aliases = Parameter(
-    'DistributionAliases',
+aliases = Parameter(
+    'ParametersAliases',
     AllowedPattern='^((\d+)(,\s*\d+)*)*$',
     ConstraintDescription='must be comma-delimited FQDNs.',
     Description='CNAMEs (alternate domain names), if any, for the distribution.',

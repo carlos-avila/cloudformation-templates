@@ -28,21 +28,23 @@ Author: Carlos Avila <cavila@mandelbrew.com>.
 """)
 
 # region Parameters
+template.add_parameter(parameters.source_provider)
 template.add_parameter(parameters.email)
 template.add_parameter(parameters.create_dist)
-template.add_parameter(parameters.dist_aliases)
+template.add_parameter(parameters.aliases)
 # endregion
 
 # region Conditions
-# template.add_condition('UseSourceS3', Equals('', 'S3'))
-# template.add_condition('NotUseSourceS3', Not(Condition('UseSourceS3')))
+template.add_condition('UseSourceS3', Equals(Ref(parameters.source_provider), 'S3'))
+template.add_condition('NotUseSourceS3', Not(Condition('UseSourceS3')))
 template.add_condition('CreateDistribution', Equals(Ref(parameters.create_dist), 'true'))
-template.add_condition('UseDistributionAliases', Not(Equals(Ref(parameters.dist_aliases), '')))
+template.add_condition('UseDistributionAliases', Not(Equals(Ref(parameters.aliases), '')))
 # endregion
 
 # region Resources
 # App
-template.add_resource(app.source)
+template.add_resource(app.source_bucket)
+template.add_resource(app.source_repo)
 template.add_resource(app.build)
 template.add_resource(app.distribution)
 template.add_resource(app.build_policy)
@@ -73,23 +75,25 @@ template.add_output(outputs.website_url)
 template.add_metadata({
     'AWS::CloudFormation::Interface': {
         'ParameterLabels': {
+            parameters.source_provider.title: {'default': 'Source Provider'},
             parameters.email.title: {'default': 'Notifications'},
             # CDN
             parameters.create_dist.title: {'default': 'Create CDN'},
-            parameters.dist_aliases.title: {'default': 'CDN Aliases'},
+            parameters.aliases.title: {'default': 'CDN Aliases'},
         },
         'ParameterGroups': [
             {
                 'Label': {'default': 'General'},
                 'Parameters': [
                     parameters.email.title,
+                    parameters.source_provider.title,
                 ]
             },
             {
                 'Label': {'default': 'CDN'},
                 'Parameters': [
                     parameters.create_dist.title,
-                    parameters.dist_aliases.title,
+                    parameters.aliases.title,
                 ]
             },
         ]

@@ -1,10 +1,11 @@
 from troposphere import Ref, GetAtt, Sub, Split, Select, Join, If
-from troposphere import s3, cloudfront
+from troposphere import s3, cloudfront, codecommit
 
 import parameters
 
-source = s3.Bucket(
-    'AppSource',
+source_bucket = s3.Bucket(
+    'AppSourceBucket',
+    Condition='UseSourceS3',
     VersioningConfiguration=s3.VersioningConfiguration(Status='Enabled'),
     LifecycleConfiguration=s3.LifecycleConfiguration(
         Rules=[
@@ -16,6 +17,12 @@ source = s3.Bucket(
             )
         ]
     )
+)
+
+source_repo = codecommit.Repository(
+    'AppSourceRepo',
+    Condition='NotUseSourceS3',
+    RepositoryName=Sub('${AWS::StackName}')
 )
 
 build = s3.Bucket(
@@ -59,7 +66,7 @@ distribution = cloudfront.Distribution(
     DistributionConfig=cloudfront.DistributionConfig(
         Aliases=If(
             'UseDistributionAliases',
-            Split(',', Ref(parameters.dist_aliases)),
+            Split(',', Ref(parameters.aliases)),
             Ref('AWS::NoValue')
         ),
         Comment=Ref('AWS::StackName'),

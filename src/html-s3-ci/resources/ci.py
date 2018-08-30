@@ -1,5 +1,5 @@
-from troposphere import Ref, Sub, GetAtt, s3
-from troposphere import codebuild, codepipeline, iam, sns
+from troposphere import Ref, Sub, GetAtt, If
+from troposphere import codebuild, codepipeline, iam, sns, s3
 
 import parameters
 
@@ -111,15 +111,24 @@ pipeline = codepipeline.Pipeline(
                     ActionTypeId=codepipeline.ActionTypeId(
                         Category='Source',
                         Owner='AWS',
-                        Provider='S3',
+                        Provider=Ref(parameters.source_provider),
                         Version='1',
                     ),
-                    Configuration={
-                        'S3Bucket': Ref(app.source),
-                        'S3ObjectKey': 'source.zip',
-                    },
+                    Configuration=If(
+                        'UseSourceS3',
+                        {
+                            'S3Bucket': Ref(app.source_bucket),
+                            'S3ObjectKey': 'source.zip',
+                        },
+                        {
+                            'BranchName': 'master',
+                            'RepositoryName': GetAtt(app.source_repo, 'Name'),
+                        },
+                    ),
                     OutputArtifacts=[
-                        codepipeline.OutputArtifacts(Name=app.source.title)
+                        codepipeline.OutputArtifacts(
+                            Name=If('UseSourceS3', app.source_bucket.title, app.source_repo.title)
+                        )
                     ],
                 )
             ]
@@ -140,7 +149,9 @@ pipeline = codepipeline.Pipeline(
                         'ProjectName': Ref(build),
                     },
                     InputArtifacts=[
-                        codepipeline.InputArtifacts(Name=app.source.title)
+                        codepipeline.InputArtifacts(
+                            Name=If('UseSourceS3', app.source_bucket.title, app.source_repo.title)
+                        )
                     ],
                     OutputArtifacts=[
                         codepipeline.OutputArtifacts(Name=build.title)
@@ -286,18 +297,34 @@ pipeline_policy = iam.PolicyType(
     PolicyDocument={
         'Statement': [
             # Source
-            {
-                'Action': [
-                    's3:GetObject',
-                    's3:GetObjectVersion',
-                    's3:GetBucketVersioning',
-                ],
-                'Effect': 'Allow',
-                'Resource': [
-                    Sub('${arn}', **{'arn': GetAtt(app.source, 'Arn')}),
-                    Sub('${arn}/*', **{'arn': GetAtt(app.source, 'Arn')}),
-                ]
-            },
+            If(
+                'UseSourceS3',
+                {  # S3 bucket
+                    'Action': [
+                        's3:GetObject',
+                        's3:GetObjectVersion',
+                        's3:GetBucketVersioning',
+                    ],
+                    'Effect': 'Allow',
+                    'Resource': [
+                        Sub('${arn}', **{'arn': GetAtt(app.source_bucket, 'Arn')}),
+                        Sub('${arn}/*', **{'arn': GetAtt(app.source_bucket, 'Arn')}),
+                    ]
+                },
+                {  # CodeCommit repo
+                    "Action": [
+                        'codecommit:CancelUploadArchive',
+                        'codecommit:GetBranch',
+                        'codecommit:GetCommit',
+                        'codecommit:GetUploadArchiveStatus',
+                        'codecommit:UploadArchive',
+                    ],
+                    "Effect": "Allow",
+                    "Resource": [
+                        GetAtt(app.source_repo, 'Arn'),
+                    ]
+                }
+            ),
             # Artifacts
             {
                 'Action': [
