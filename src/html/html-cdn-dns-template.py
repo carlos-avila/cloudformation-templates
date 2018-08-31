@@ -23,8 +23,8 @@ Author: Carlos Avila <cavila@mandelbrew.com>.
 """)
 
 # region Parameters
-alternate_domain = template.add_parameter(Parameter(
-    'AlternateDomain',
+alternative_domain = template.add_parameter(Parameter(
+    'AlternativeDomain',
     AllowedPattern=('^((([a-zA-Z]{1})|([a-zA-Z]{1}[a-zA-Z]{1})|'
                     '([a-zA-Z]{1}[0-9]{1})|([0-9]{1}[a-zA-Z]{1})|'
                     '([a-zA-Z0-9][a-zA-Z0-9-_]{1,61}[a-zA-Z0-9]))\.'
@@ -99,7 +99,7 @@ has_hosted_zone = template.add_condition(
 )
 has_alt_domain = template.add_condition(
     'HasAlternativeDomain',
-    Not(Equals(Ref(alternate_domain), ''))
+    Not(Equals(Ref(alternative_domain), ''))
 )
 has_main_and_alt_domain = template.add_condition(
     'HasMainAndAltDomain',
@@ -118,21 +118,13 @@ certificate = template.add_resource(certificatemanager.Certificate(
         DomainName=Ref(main_domain),
         ValidationDomain=Ref(validation_domain)
     )],
-    SubjectAlternativeNames=If(has_alt_domain, [Ref(alternate_domain)], 'AWS::NoValue'),
+    SubjectAlternativeNames=If(has_main_and_alt_domain, [Ref(alternative_domain)], [Ref('AWS::NoValue')]),
 ))
 
 distribution = template.add_resource(cloudfront.Distribution(
     'Distribution',
     DistributionConfig=cloudfront.DistributionConfig(
-        Aliases=If(
-            has_main_and_alt_domain,
-            [Ref(main_domain), Ref(alternate_domain)],
-            If(
-                has_main_domain,
-                [Ref(main_domain)],
-                Ref('AWS::NoValue')
-            )
-        ),
+        Aliases=If(has_main_and_alt_domain, [Ref(main_domain), Ref(alternative_domain)], [Ref(main_domain)]),
         Comment=Ref('AWS::StackName'),
         DefaultCacheBehavior=cloudfront.DefaultCacheBehavior(
             Compress=True,
@@ -185,10 +177,10 @@ record_set_group = template.add_resource(route53.RecordSetGroup(
                     HostedZoneId=CLOUDFRONT_HOSTED_ZONE_ID,
                     DNSName=GetAtt(distribution, 'DomainName'),
                 ),
-                Name=Ref(alternate_domain),
+                Name=Ref(alternative_domain),
                 Type='A',
             ),
-            'AWS::NoValue'
+            Ref('AWS::NoValue')
         ),
     ]
 ))
@@ -211,7 +203,7 @@ template.add_metadata({
             # DNS
             hosted_zone_id.title: {'default': 'Hosted Zone ID'},
             main_domain.title: {'default': 'Main Domain'},
-            alternate_domain.title: {'default': 'Alternate Domain'},
+            alternative_domain.title: {'default': 'Alternate Domain'},
             # CDN
             origin_domain.title: {'default': 'Origin Domain'},
             origin_path.title: {'default': 'Origin Path'},
@@ -229,7 +221,7 @@ template.add_metadata({
                 'Parameters': [
                     hosted_zone_id.title,
                     main_domain.title,
-                    alternate_domain.title,
+                    alternative_domain.title,
                 ]
             },
             {
