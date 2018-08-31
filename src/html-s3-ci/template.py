@@ -11,13 +11,14 @@ import outputs
 template = Template("""Provides resources for serving web static content with continuous deployment.
 
 Creates the following resources:
-    - S3 bucket: source code.
+    - S3 bucket (optional): source code.
+    - CodeCommit repository (optional): source code.
     - S3 bucket: built code.
-    - CloudFront distribution:
+    - CloudFront distribution (optional): distributes contents of build bucket.
 
 In addition, the following resources are created for CD/CI:
-    - S3 bucket: artifacts used by the pipeline.
     - SNS topic: pipeline notifications.
+    - S3 bucket: artifacts used by the pipeline.
     - CodeBuild project: build.
     - CodeBuild project: deploy.
     - CodeBuild pipeline: Flow control for fetch, build and deploy.
