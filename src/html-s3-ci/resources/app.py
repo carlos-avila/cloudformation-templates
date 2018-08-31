@@ -1,7 +1,5 @@
-from troposphere import Ref, GetAtt, Sub, Split, Select, Join, If
-from troposphere import s3, cloudfront, codecommit
-
-import parameters
+from troposphere import Ref, GetAtt, Sub
+from troposphere import s3, codecommit
 
 source_bucket = s3.Bucket(
     'AppSource',
@@ -21,7 +19,7 @@ source_bucket = s3.Bucket(
 
 source_repo = codecommit.Repository(
     'AppSourceRepo',
-    Condition='NotUseSourceS3',
+    Condition='UseSourceRepo',
     RepositoryName=Sub('${AWS::StackName}')
 )
 
@@ -59,34 +57,4 @@ build_policy = s3.BucketPolicy(
             }
         ]
     }
-)
-
-distribution = cloudfront.Distribution(
-    'AppDistribution',
-    DistributionConfig=cloudfront.DistributionConfig(
-        Aliases=If(
-            'UseDistributionAliases',
-            Split(',', Ref(parameters.aliases)),
-            Ref('AWS::NoValue')
-        ),
-        Comment=Ref('AWS::StackName'),
-        DefaultCacheBehavior=cloudfront.DefaultCacheBehavior(
-            Compress=True,
-            ForwardedValues=cloudfront.ForwardedValues(QueryString=True),
-            TargetOriginId=GetAtt(build, 'DomainName'),
-            ViewerProtocolPolicy='redirect-to-https',
-        ),
-        Enabled=True,
-        Origins=[
-            cloudfront.Origin(
-                Id=GetAtt(build, 'DomainName'),
-                DomainName=Select(2, Split('/', GetAtt(build, 'WebsiteURL'))),
-                CustomOriginConfig=cloudfront.CustomOrigin(
-                    OriginProtocolPolicy='http-only'
-                ),
-            ),
-        ],
-        PriceClass='PriceClass_100'
-    ),
-    Condition='CreateDistribution',
 )

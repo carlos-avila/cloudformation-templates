@@ -8,13 +8,12 @@ from resources import app, ci
 import parameters
 import outputs
 
-template = Template("""Provides resources for serving web static content with continuous deployment.
+template = Template("""Provides resources for serving static web content with continuous deployment.
 
 Creates the following resources:
     - S3 bucket (optional): source code.
     - CodeCommit repository (optional): source code.
     - S3 bucket: built code.
-    - CloudFront distribution (optional): distributes contents of build bucket.
 
 In addition, the following resources are created for CD/CI:
     - SNS topic: pipeline notifications.
@@ -22,24 +21,28 @@ In addition, the following resources are created for CD/CI:
     - CodeBuild project: build.
     - CodeBuild project: deploy.
     - CodeBuild pipeline: Flow control for fetch, build and deploy.
-      
+
+It works well with:
+    - html-cdn-dns      
 
 Template: html-s3-ci.
 Author: Carlos Avila <cavila@mandelbrew.com>.
 """)
 
 # region Parameters
-template.add_parameter(parameters.source_provider)
 template.add_parameter(parameters.email)
-template.add_parameter(parameters.create_dist)
-template.add_parameter(parameters.aliases)
+template.add_parameter(parameters.source_provider)
 # endregion
 
 # region Conditions
-template.add_condition('UseSourceS3', Equals(Ref(parameters.source_provider), 'S3'))
-template.add_condition('NotUseSourceS3', Not(Condition('UseSourceS3')))
-template.add_condition('CreateDistribution', Equals(Ref(parameters.create_dist), 'true'))
-template.add_condition('UseDistributionAliases', Not(Equals(Ref(parameters.aliases), '')))
+template.add_condition(
+    'UseSourceS3',
+    Equals(Ref(parameters.source_provider), 'S3')
+)
+template.add_condition(
+    'UseSourceRepo',
+    Not(Condition('UseSourceS3'))
+)
 # endregion
 
 # region Resources
@@ -47,7 +50,6 @@ template.add_condition('UseDistributionAliases', Not(Equals(Ref(parameters.alias
 template.add_resource(app.source_bucket)
 template.add_resource(app.source_repo)
 template.add_resource(app.build)
-template.add_resource(app.distribution)
 template.add_resource(app.build_policy)
 # endregion
 
@@ -68,7 +70,6 @@ template.add_resource(ci.pipeline_policy)
 # endregion
 
 # region Outputs
-template.add_output(outputs.distribution_domain)
 template.add_output(outputs.website_url)
 # endregion
 
@@ -78,23 +79,13 @@ template.add_metadata({
         'ParameterLabels': {
             parameters.source_provider.title: {'default': 'Source Provider'},
             parameters.email.title: {'default': 'Notifications'},
-            # CDN
-            parameters.create_dist.title: {'default': 'Create CDN'},
-            parameters.aliases.title: {'default': 'CDN Aliases'},
         },
         'ParameterGroups': [
             {
-                'Label': {'default': 'General'},
+                'Label': {'default': 'Pipeline'},
                 'Parameters': [
                     parameters.email.title,
                     parameters.source_provider.title,
-                ]
-            },
-            {
-                'Label': {'default': 'CDN'},
-                'Parameters': [
-                    parameters.create_dist.title,
-                    parameters.aliases.title,
                 ]
             },
         ]

@@ -4,8 +4,7 @@ from troposphere import Ref
 from troposphere import Template, Parameter, Output
 from troposphere import certificatemanager
 
-template = Template("""
-Create the certificate for use with CloudFront.
+template = Template("""Create the certificate for use with CloudFront.
 
 CloudFront requires ACM certificates from us-east-1, this template
 helps creating that certificate in a different region from the

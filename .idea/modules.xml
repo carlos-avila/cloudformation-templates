@@ -8,6 +8,7 @@
       <module fileurl="file://$PROJECT_DIR$/src/django-zappa-aio-s3db-cdn-lg/django-zappa-aio-s3db-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django-zappa-aio-s3db-cdn-lg/django-zappa-aio-s3db-cdn-lg.iml" />
       <module fileurl="file://$PROJECT_DIR$/src/django-zappa-cdn-lg/django-zappa-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django-zappa-cdn-lg/django-zappa-cdn-lg.iml" />
       <module fileurl="file://$PROJECT_DIR$/src/generic/generic.iml" filepath="$PROJECT_DIR$/src/generic/generic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/html/html.iml" filepath="$PROJECT_DIR$/src/html/html.iml" />
       <module fileurl="file://$PROJECT_DIR$/src/html-s3-ci/html-s3-ci.iml" filepath="$PROJECT_DIR$/src/html-s3-ci/html-s3-ci.iml" />
     </modules>
   </component>
