@@ -4,7 +4,7 @@ from troposphere import s3, cloudfront, codecommit
 import parameters
 
 source_bucket = s3.Bucket(
-    'AppSourceBucket',
+    'AppSource',
     Condition='UseSourceS3',
     VersioningConfiguration=s3.VersioningConfiguration(Status='Enabled'),
     LifecycleConfiguration=s3.LifecycleConfiguration(
