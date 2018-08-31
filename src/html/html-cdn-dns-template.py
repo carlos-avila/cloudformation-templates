@@ -10,6 +10,8 @@ CLOUDFRONT_HOSTED_ZONE_ID = 'Z2FDTNDATAQYW2'
 
 template = Template("""Provide content distribution with automatic SSL and DNS management.
 
+The certificate resource needs to be created in region us-east-1 for CloudFront to recognize it.
+
 Creates the following resources:
     - CloudFront distribution: distributes contents of any single origin.
     - ACM certificate: allows SSL authentication. 
