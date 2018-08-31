@@ -1,25 +1,25 @@
 #!/usr/bin/env python3
 
 from troposphere import Ref, GetAtt, Join, Sub
-from troposphere import Template, Parameter, Output
+from troposphere import Template, Output
 from troposphere import cloudfront, s3
 
 # Magic AWS number For CloudFront
 CLOUDFRONT_HOSTED_ZONE_ID = 'Z2FDTNDATAQYW2'
 
-template = Template("""Provide static and media content distribution using CloudFront for a Django application. It 
-assumes there's separate buckets for static and media assets. Always forward http to https.
+template = Template("""Provide secure access to an S3 resource from CloudFront using OAI.
 
 Creates the following resources:
+    - S3 bucket
     - CloudFront distribution
 
-Template: cdn-template.
+Template: generic-s3-cdn-oai-template.
 Author: Carlos Avila <cavila@mandelbrew.com>.
 """)
 
 # region Resources
 source = template.add_resource(s3.Bucket(
-    'AppSource',
+    'Source',
     VersioningConfiguration=s3.VersioningConfiguration(Status='Enabled'),
     LifecycleConfiguration=s3.LifecycleConfiguration(
         Rules=[
@@ -34,7 +34,7 @@ source = template.add_resource(s3.Bucket(
 ))
 
 static = template.add_resource(s3.Bucket(
-    'AppStatic',
+    'Static',
     CorsConfiguration=s3.CorsConfiguration(
         CorsRules=[
             s3.CorsRules(
@@ -49,7 +49,7 @@ static = template.add_resource(s3.Bucket(
 ))
 
 oai = template.add_resource(cloudfront.CloudFrontOriginAccessIdentity(
-    'AppDistributionOai',
+    'DistributionOai',
     CloudFrontOriginAccessIdentityConfig=cloudfront.CloudFrontOriginAccessIdentityConfig(
         Comment=Ref(static)
     )
@@ -84,7 +84,7 @@ distribution = template.add_resource(cloudfront.Distribution(
 ))
 
 static_policy = template.add_resource(s3.BucketPolicy(
-    'AppStaticPolicy',
+    'StaticPolicy',
     Bucket=Ref(static),
     PolicyDocument={
         'Statement': [
