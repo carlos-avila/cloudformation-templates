@@ -6,7 +6,6 @@
       <module fileurl="file://$PROJECT_DIR$/src/django/.idea/django.iml" filepath="$PROJECT_DIR$/src/django/.idea/django.iml" />
       <module fileurl="file://$PROJECT_DIR$/src/django-zappa/.idea/django-zappa.iml" filepath="$PROJECT_DIR$/src/django-zappa/.idea/django-zappa.iml" />
       <module fileurl="file://$PROJECT_DIR$/src/django-zappa-aio-s3db-cdn-lg/.idea/django-zappa-aio-s3db-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django-zappa-aio-s3db-cdn-lg/.idea/django-zappa-aio-s3db-cdn-lg.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/django-zappa-cdn-lg/.idea/django-zappa-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django-zappa-cdn-lg/.idea/django-zappa-cdn-lg.iml" />
       <module fileurl="file://$PROJECT_DIR$/src/generic/.idea/generic.iml" filepath="$PROJECT_DIR$/src/generic/.idea/generic.iml" />
       <module fileurl="file://$PROJECT_DIR$/src/html/.idea/html.iml" filepath="$PROJECT_DIR$/src/html/.idea/html.iml" />
       <module fileurl="file://$PROJECT_DIR$/src/html-s3-ci/.idea/html-s3-ci.iml" filepath="$PROJECT_DIR$/src/html-s3-ci/.idea/html-s3-ci.iml" />

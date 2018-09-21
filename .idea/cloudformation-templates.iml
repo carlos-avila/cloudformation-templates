@@ -8,7 +8,6 @@
     <orderEntry type="module" module-name="django-zappa" />
     <orderEntry type="module" module-name="django-zappa-aio-s3db-cdn-lg" />
     <orderEntry type="module" module-name="django-zappa-aio-s3db-cdn-lg" />
-    <orderEntry type="module" module-name="django-zappa-cdn-lg" />
     <orderEntry type="module" module-name="generic" />
     <orderEntry type="module" module-name="html" />
     <orderEntry type="module" module-name="html-s3-ci" />
