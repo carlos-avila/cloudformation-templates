@@ -1,9 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<module type="JAVA_MODULE" version="4">
-  <component name="NewModuleRootManager" inherit-compiler-output="true">
-    <exclude-output />
+<module type="PYTHON_MODULE" version="4">
+  <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$" />
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="module" module-name="django" />
+    <orderEntry type="module" module-name="django-zappa" />
+    <orderEntry type="module" module-name="django-zappa-aio-s3db-cdn-lg" />
+    <orderEntry type="module" module-name="django-zappa-aio-s3db-cdn-lg" />
+    <orderEntry type="module" module-name="django-zappa-cdn-lg" />
+    <orderEntry type="module" module-name="generic" />
+    <orderEntry type="module" module-name="html" />
+    <orderEntry type="module" module-name="html-s3-ci" />
+  </component>
+  <component name="TemplatesService">
+    <option name="TEMPLATE_FOLDERS">
+      <list>
+        <option value="$MODULE_DIR$" />
+      </list>
+    </option>
+  </component>
+  <component name="TestRunnerService">
+    <option name="PROJECT_TEST_RUNNER" value="Unittests" />
   </component>
 </module>

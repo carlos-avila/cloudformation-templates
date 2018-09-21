@@ -2,14 +2,14 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/cloudformation-templates.iml" filepath="$PROJECT_DIR$/cloudformation-templates.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/django/django.iml" filepath="$PROJECT_DIR$/src/django/django.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/django-zappa/django-zappa.iml" filepath="$PROJECT_DIR$/src/django-zappa/django-zappa.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/django-zappa-aio-s3db-cdn-lg/django-zappa-aio-s3db-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django-zappa-aio-s3db-cdn-lg/django-zappa-aio-s3db-cdn-lg.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/django-zappa-cdn-lg/django-zappa-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django-zappa-cdn-lg/django-zappa-cdn-lg.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/generic/generic.iml" filepath="$PROJECT_DIR$/src/generic/generic.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/html/html.iml" filepath="$PROJECT_DIR$/src/html/html.iml" />
-      <module fileurl="file://$PROJECT_DIR$/src/html-s3-ci/html-s3-ci.iml" filepath="$PROJECT_DIR$/src/html-s3-ci/html-s3-ci.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/cloudformation-templates.iml" filepath="$PROJECT_DIR$/.idea/cloudformation-templates.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/django/.idea/django.iml" filepath="$PROJECT_DIR$/src/django/.idea/django.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/django-zappa/.idea/django-zappa.iml" filepath="$PROJECT_DIR$/src/django-zappa/.idea/django-zappa.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/django-zappa-aio-s3db-cdn-lg/.idea/django-zappa-aio-s3db-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django-zappa-aio-s3db-cdn-lg/.idea/django-zappa-aio-s3db-cdn-lg.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/django-zappa-cdn-lg/.idea/django-zappa-cdn-lg.iml" filepath="$PROJECT_DIR$/src/django-zappa-cdn-lg/.idea/django-zappa-cdn-lg.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/generic/.idea/generic.iml" filepath="$PROJECT_DIR$/src/generic/.idea/generic.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/html/.idea/html.iml" filepath="$PROJECT_DIR$/src/html/.idea/html.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/html-s3-ci/.idea/html-s3-ci.iml" filepath="$PROJECT_DIR$/src/html-s3-ci/.idea/html-s3-ci.iml" />
     </modules>
   </component>
 </project>
