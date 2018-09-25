@@ -13,7 +13,7 @@ assumes there's separate buckets for static and media assets. Always forward htt
 Creates the following resources:
     - CloudFront distribution
 
-Template: cdn-template.
+Template: django-cdn.
 Author: Carlos Avila <cavila@mandelbrew.com>.
 """)
 

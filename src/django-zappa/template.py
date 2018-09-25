@@ -18,7 +18,10 @@ In addition, the following resources are created for each environment:
     - S3 bucket: static assets.
     - S3 bucket: media assets.
 
-Template: zappa-cdn-lg.
+Works well with:
+    - django-cdn
+
+Template: django-zappa.
 Author: Carlos Avila <cavila@mandelbrew.com>.
 """)
 
@@ -49,6 +52,24 @@ template.add_output(outputs.app_media)
 template.add_output(outputs.app_static)
 template.add_output(outputs.app_role_arn)
 template.add_output(outputs.app_role_name)
+# endregion
+
+# region Metadata
+template.add_metadata({
+    'AWS::CloudFormation::Interface': {
+        'ParameterLabels': {
+            parameters.slim_handler.title: {'default': 'Slim Handler'},
+        },
+        'ParameterGroups': [
+            {
+                'Label': {'default': 'Zappa'},
+                'Parameters': [
+                    parameters.slim_handler.title,
+                ]
+            }
+        ]
+    }
+})
 # endregion
 
 if __name__ == '__main__':
