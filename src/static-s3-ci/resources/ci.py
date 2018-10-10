@@ -1,7 +1,8 @@
 from troposphere import Ref, Sub, GetAtt, If
-from troposphere import codebuild, codepipeline, iam, sns, s3
+from troposphere import codebuild, codepipeline, iam, sns, s3, events
 
 import parameters
+import conditions
 
 from resources import app
 
@@ -70,7 +71,7 @@ build = codebuild.Project(
     Artifacts=codebuild.Artifacts(Type='CODEPIPELINE'),
     Environment=codebuild.Environment(
         Type='LINUX_CONTAINER',
-        Image='aws/codebuild/docker:1.12.1',
+        Image='aws/codebuild/docker:17.09.0',
         ComputeType='BUILD_GENERAL1_SMALL',
     )
 )
@@ -83,7 +84,7 @@ deploy = codebuild.Project(
     Artifacts=codebuild.Artifacts(Type='CODEPIPELINE'),
     Environment=codebuild.Environment(
         Type='LINUX_CONTAINER',
-        Image='aws/codebuild/docker:1.12.1',
+        Image='aws/codebuild/docker:17.09.0',
         ComputeType='BUILD_GENERAL1_SMALL',
         EnvironmentVariables=[
             codebuild.EnvironmentVariable(
@@ -162,19 +163,23 @@ pipeline = codepipeline.Pipeline(
         codepipeline.Stages(
             Name='Production',
             Actions=[
-                codepipeline.Actions(
-                    Name='Approve',
-                    RunOrder=1,
-                    ActionTypeId=codepipeline.ActionTypeId(
-                        Category='Approval',
-                        Owner='AWS',
-                        Provider='Manual',
-                        Version='1',
+                If(
+                    conditions.RequireApproval,
+                    codepipeline.Actions(
+                        Name='Approve',
+                        RunOrder=1,
+                        ActionTypeId=codepipeline.ActionTypeId(
+                            Category='Approval',
+                            Owner='AWS',
+                            Provider='Manual',
+                            Version='1',
+                        ),
+                        Configuration={
+                            'NotificationArn': Ref(notifications),
+                            'CustomData': Sub('A new change is waiting for ${AWS::StackName}')
+                        }
                     ),
-                    Configuration={
-                        'NotificationArn': Ref(notifications),
-                        'CustomData': Sub('A new change is waiting for ${AWS::StackName}')
-                    }
+                    Ref('AWS::NoValue')
                 ),
                 codepipeline.Actions(
                     Name='Deploy',
@@ -194,6 +199,33 @@ pipeline = codepipeline.Pipeline(
                 ),
             ]
         ),
+    ]
+)
+
+pipeline_events = events.Rule(
+    'CiPipelineEvents',
+    Description='Notify of changes in pipeline',
+    EventPattern={
+        'source': ['aws.codepipeline'],
+        'detail-type': ['CodePipeline Pipeline Execution State Change'],
+        'detail': {
+            'state': ['SUCCEEDED', 'FAILED'],
+            'pipeline': [Ref(pipeline)]
+        }
+    },
+    Targets=[
+        events.Target(
+            Arn=Ref(notifications),
+            Id='PipelineChange',
+            InputTransformer=events.InputTransformer(
+                InputPathsMap={
+                    'pipeline': '$.detail.pipeline',
+                    'state': '$.detail.state'
+                },
+                InputTemplate='"Pipeline <pipeline> has <state>."'
+
+            )
+        )
     ]
 )
 

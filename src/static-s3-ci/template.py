@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 
-from troposphere import Ref, Equals, Condition, Not
 from troposphere import Template
 
 from resources import app, ci
 
-import parameters
+import conditions
 import outputs
+import parameters
 
 template = Template("""Provides resources for serving static web content with continuous deployment.
 
@@ -25,24 +25,22 @@ In addition, the following resources are created for CD/CI:
 It works well with:
     - html-cdn-dns      
 
-Template: html-s3-ci.
+Template: static-s3-ci.
 Author: Carlos Avila <cavila@mandelbrew.com>.
 """)
 
 # region Parameters
+template.add_parameter(parameters.allowed_methods)
+template.add_parameter(parameters.allowed_origins)
 template.add_parameter(parameters.email)
+template.add_parameter(parameters.exposed_headers)
+template.add_parameter(parameters.require_approval)
 template.add_parameter(parameters.source_provider)
 # endregion
 
 # region Conditions
-template.add_condition(
-    'UseSourceS3',
-    Equals(Ref(parameters.source_provider), 'S3')
-)
-template.add_condition(
-    'UseSourceRepo',
-    Not(Condition('UseSourceS3'))
-)
+for key in conditions.conditions:
+    template.add_condition(key, conditions.conditions[key])
 # endregion
 
 # region Resources
@@ -63,6 +61,7 @@ template.add_resource(ci.notifications)
 template.add_resource(ci.build)
 template.add_resource(ci.deploy)
 template.add_resource(ci.pipeline)
+template.add_resource(ci.pipeline_events)
 
 template.add_resource(ci.build_policy)
 template.add_resource(ci.deploy_policy)
@@ -77,8 +76,14 @@ template.add_output(outputs.website_url)
 template.add_metadata({
     'AWS::CloudFormation::Interface': {
         'ParameterLabels': {
-            parameters.source_provider.title: {'default': 'Source Provider'},
+            # Pipeline
             parameters.email.title: {'default': 'Notifications'},
+            parameters.require_approval.title: {'default': 'Require Approval'},
+            parameters.source_provider.title: {'default': 'Source Provider'},
+            # Bucket
+            parameters.allowed_methods.title: {'default': 'Allowed Methods'},
+            parameters.allowed_origins.title: {'default': 'Allowed Origins'},
+            parameters.exposed_headers.title: {'default': 'Exposed Headers'},
         },
         'ParameterGroups': [
             {
@@ -86,6 +91,15 @@ template.add_metadata({
                 'Parameters': [
                     parameters.email.title,
                     parameters.source_provider.title,
+                    parameters.require_approval.title,
+                ]
+            },
+            {
+                'Label': {'default': 'Bucket'},
+                'Parameters': [
+                    parameters.allowed_methods.title,
+                    parameters.allowed_origins.title,
+                    parameters.exposed_headers.title,
                 ]
             },
         ]

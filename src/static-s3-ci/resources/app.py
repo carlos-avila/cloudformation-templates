@@ -1,6 +1,9 @@
 from troposphere import Ref, GetAtt, Sub
 from troposphere import s3, codecommit
 
+import parameters
+import conditions
+
 source_bucket = s3.Bucket(
     'AppSource',
     Condition='UseSourceS3',
@@ -19,7 +22,7 @@ source_bucket = s3.Bucket(
 
 source_repo = codecommit.Repository(
     'AppSourceRepo',
-    Condition='UseSourceRepo',
+    Condition=conditions.UseSourceRepo,
     RepositoryName=Sub('${AWS::StackName}')
 )
 
@@ -33,9 +36,9 @@ build = s3.Bucket(
         CorsRules=[
             s3.CorsRules(
                 AllowedHeaders=['Authorization'],
-                AllowedMethods=['GET'],
-                AllowedOrigins=['*'],
-                ExposedHeaders=[],
+                AllowedMethods=Ref(parameters.allowed_methods),
+                AllowedOrigins=Ref(parameters.allowed_origins),
+                ExposedHeaders=Ref(parameters.exposed_headers),
                 MaxAge=3600,
             )
         ]
